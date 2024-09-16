@@ -17,7 +17,9 @@ async function signin(email, password) {
     return response;
   } catch (err) {
     console.log(err);
-    error.value = err.message;
+    if (err.code === "auth/invalid-credential") {
+      error.value = "Invalid information";
+    }
   } finally {
     isPending.value = false;
   }
