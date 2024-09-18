@@ -1,5 +1,5 @@
 <template>
-  <div class="px-8 py-8">
+  <div class="py-8">
     <div class="mx-auto container px-8">
       <!-- Start: Form -->
       <form @submit.prevent="onSubmit" class="flex flex-col gap-6">
@@ -9,7 +9,7 @@
             <input
               id="fullName"
               type="text"
-              placeholder="imoney..."
+              placeholder="full name..."
               class="px-4 py-3 rounded-lg border-gray-200 mt-1 border"
               name="fullName"
               v-model="fullName"
