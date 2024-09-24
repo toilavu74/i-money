@@ -14,11 +14,12 @@ const routes = [
     path: "/",
     name: "Home",
     meta: {
-      heading: "Home",
+      heading: "Hey, Admin",
       isShowFooter: true,
     },
     component: () =>
       import(/* webpackChunkName: "home" */ "../views/index.vue"),
+    beforeEnter: requireAuth,
   },
   {
     path: "/register",
@@ -56,13 +57,50 @@ const routes = [
     beforeEnter: requireAuth,
   },
   {
-    path: "/report",
-    name: "Report",
+    path: "/transactions",
+    name: "Transactions",
     meta: {
-      heading: "Report",
+      heading: "Transactions",
+      isShowFooter: true,
     },
     component: () =>
-      import(/* webpackChunkName: "report" */ "../views/report.vue"),
+      import(
+        /* webpackChunkName: "transactions" */ "../views/transactions.vue"
+      ),
+    beforeEnter: requireAuth,
+  },
+  {
+    path: "/category",
+    name: "Category",
+    meta: {
+      heading: "Category",
+    },
+    component: () =>
+      import(/* webpackChunkName: "category" */ "../views/category.vue"),
+    beforeEnter: requireAuth,
+  },
+  {
+    path: "/category/:id",
+    name: "EditCategory",
+    meta: {
+      heading: "Eidt category",
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "edit-category" */ "../views/edit-category.vue"
+      ),
+    beforeEnter: requireAuth,
+  },
+  {
+    path: "/new-category",
+    name: "NewCategory",
+    meta: {
+      heading: "Add Category",
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "new-category" */ "../views/new-category.vue"
+      ),
     beforeEnter: requireAuth,
   },
   {

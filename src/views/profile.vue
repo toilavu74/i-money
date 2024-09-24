@@ -55,15 +55,15 @@ export default {
         name: "My wallet",
         icon: "t2ico-wallet",
         router: {
-          name: "Home",
+          name: "Transactions",
           params: {},
         },
       },
       {
-        name: "Tools",
+        name: "Category",
         icon: "t2ico-ticket-star",
         router: {
-          name: "Home",
+          name: "Category",
           params: {},
         },
       },

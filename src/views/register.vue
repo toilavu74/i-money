@@ -15,6 +15,9 @@
               v-model="fullName"
             />
           </label>
+          <span class="text-red block mt-2" v-if="fullNameError">{{
+            fullNameError
+          }}</span>
         </div>
         <div class="row">
           <label for="email" class="flex flex-col">
@@ -28,6 +31,9 @@
               v-model="email"
             />
           </label>
+          <span class="text-red block mt-2" v-if="emailError">{{
+            emailError
+          }}</span>
         </div>
         <div class="row">
           <label for="password" class="flex flex-col">
@@ -41,6 +47,9 @@
               v-model="password"
             />
           </label>
+          <span class="text-red block mt-2" v-if="passwordError">{{
+            passwordError
+          }}</span>
         </div>
         <div class="row">
           <button
@@ -78,27 +87,56 @@
 </template>
 <script>
 import { useSignUp } from "@/composables/useSignup";
-import { ref } from "vue";
+//import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { useForm, useField } from "vee-validate";
+import * as yup from "yup";
 export default {
   setup() {
     const { error, isPending, signup } = useSignUp();
     const router = useRouter();
-    const fullName = ref("");
-    const email = ref("");
-    const password = ref("");
-    async function onSubmit() {
+    // const fullName = ref("");
+    // const email = ref("");
+    // const password = ref("");
+
+    const schema = yup.object({
+      fullName: yup
+        .string()
+        .required("Full name cannot be left blank")
+        .min(3, "Full name must be at least 3 characters"),
+      email: yup
+        .string()
+        .required("Email cannot be left blank")
+        .email("Email invalid"),
+      password: yup
+        .string()
+        .required("Password cannot be left blank")
+        .min(6, "Password must be at least 6 characters"),
+    });
+
+    const { handleSubmit } = useForm({
+      validationSchema: schema,
+    });
+    const { value: fullName, errorMessage: fullNameError } =
+      useField("fullName");
+    const { value: email, errorMessage: emailError } = useField("email");
+    const { value: password, errorMessage: passwordError } =
+      useField("password");
+    const onSubmit = handleSubmit(async () => {
       await signup(email.value, password.value, fullName.value);
       if (!error.value) {
         router.push({ name: "Profile", params: {} });
       }
-    }
+    });
     return {
       error,
       isPending,
       email,
       password,
       fullName,
+      fullNameError,
+      emailError,
+      passwordError,
       onSubmit,
     };
   },

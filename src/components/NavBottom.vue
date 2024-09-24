@@ -49,8 +49,8 @@ export default {
       },
       {
         icon: "t2ico-chart",
-        name: "Report",
-        text: "Report",
+        name: "Transactions",
+        text: "Transactions",
       },
       {
         icon: "t2ico-presentation",

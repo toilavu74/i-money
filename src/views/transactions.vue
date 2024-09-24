@@ -1,0 +1,69 @@
+<template>
+  <div class="container mx-auto px-8">
+    <ul class="flex flex-col gap-3" v-if="transactions.length">
+      <li v-for="transaction in transactions" :key="transaction.id">
+        <div
+          class="flex items-center justify-between bg-white px-4 py-3 rounded-lg"
+        >
+          <div class="item-left">
+            <div class="item-content flex items-center gap-3">
+              <span class="block w-10 h-10 rounded-md"></span>
+              <div class="text">
+                <h3 class="font-bold text-black text-sm">
+                  {{ transaction.category }}
+                </h3>
+                <p class="text-gray-400 text-sm">
+                  {{ transaction.note }}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="item-right">
+            <h3 class="font-bold text-red text-lg">
+              $ {{ transaction.total }}
+            </h3>
+            <p class="text-gray-400 text-sm">
+              {{ formatDate(transaction.time.toDate()) }}
+            </p>
+          </div>
+        </div>
+      </li>
+    </ul>
+  </div>
+</template>
+<style>
+ul li:nth-child(odd) .item-left .item-content span {
+  @apply bg-rose-100;
+}
+ul li:nth-child(even) .item-left .item-content span {
+  @apply bg-green;
+}
+ul li:nth-child(3n) .item-left .item-content span {
+  @apply bg-orange-300;
+}
+</style>
+<script>
+import { ref, onMounted } from "vue";
+import useCollection from "@/composables/useCollection";
+import { formatDate } from "@/constants/import";
+export default {
+  setup() {
+    const transactions = ref([]);
+    const error = ref(null);
+    const { getCollectionTransactions } = useCollection();
+    async function fectTransactions() {
+      try {
+        transactions.value = await getCollectionTransactions();
+        //console.log(transactions.value);
+      } catch (err) {
+        console.log(err);
+        error.value = err.message;
+      }
+    }
+    onMounted(() => {
+      fectTransactions();
+    });
+    return { transactions, formatDate };
+  },
+};
+</script>

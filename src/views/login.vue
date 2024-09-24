@@ -15,6 +15,9 @@
               v-model="email"
             />
           </label>
+          <span v-if="emailError" class="text-red mt-2 block">{{
+            emailError
+          }}</span>
         </div>
         <div class="row">
           <label for="password" class="flex flex-col">
@@ -28,6 +31,9 @@
               v-model="password"
             />
           </label>
+          <span v-if="passwordError" class="text-red mt-2 block">{{
+            passwordError
+          }}</span>
         </div>
         <div class="row">
           <button
@@ -65,26 +71,42 @@
 </template>
 <script>
 import { useSignIn } from "@/composables/useSignin";
-import { ref } from "vue";
 import { useRouter } from "vue-router";
+import { useForm, useField } from "vee-validate";
+import * as yup from "yup";
 export default {
   setup() {
     const { isPending, error, signin } = useSignIn();
-    const email = ref("");
-    const password = ref("");
-
     const router = useRouter();
-    async function onLogin() {
+    const schema = yup.object({
+      email: yup
+        .string()
+        .required("Email cannot be blank")
+        .email("Invalid Email"),
+      password: yup
+        .string()
+        .required("Password cannot be blank")
+        .min(6, "Password must be at least 6 characters long"),
+    });
+    const { handleSubmit } = useForm({
+      validationSchema: schema,
+    });
+    const { value: email, errorMessage: emailError } = useField("email");
+    const { value: password, errorMessage: passwordError } =
+      useField("password");
+    const onLogin = handleSubmit(async () => {
       await signin(email.value, password.value);
       if (!error.value) {
         router.push({ name: "Profile", params: {} });
       }
-    }
+    });
     return {
       isPending,
       error,
       email,
       password,
+      emailError,
+      passwordError,
       onLogin,
     };
   },
