@@ -54,8 +54,8 @@ export default {
       },
       {
         icon: "t2ico-presentation",
-        name: "Budget",
-        text: "Budget",
+        name: "Category",
+        text: "Category",
       },
       {
         icon: "t2ico-profile",

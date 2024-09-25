@@ -1,34 +1,13 @@
 import { ref } from "vue";
-import {
-  collection,
-  addDoc,
-  getDocs,
-  where,
-  query,
-  orderBy,
-} from "firebase/firestore";
+import { collection, getDocs, where, query, orderBy } from "firebase/firestore";
 import { projectFirestore } from "@/configs/firebase";
 import { useUser } from "./useUser";
 
-function useCollection(name) {
+function useTransactions() {
   const error = ref(null);
   const isPending = ref(false);
 
-  async function addRecord(record) {
-    error.value = null;
-    isPending.value = true;
-    try {
-      const respone = await addDoc(collection(projectFirestore, name), record);
-      return respone;
-    } catch (err) {
-      console.log(err);
-      error.value = err.message;
-    } finally {
-      isPending.value = false;
-    }
-  }
-
-  async function getCollectionTransactions() {
+  async function getTransactions() {
     error.value = null;
     const { getUser } = useUser();
     const { user } = getUser();
@@ -54,9 +33,8 @@ function useCollection(name) {
   return {
     error,
     isPending,
-    addRecord,
-    getCollectionTransactions,
+    getTransactions,
   };
 }
 
-export default useCollection;
+export default useTransactions;

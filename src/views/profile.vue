@@ -5,7 +5,8 @@
       <div class="text-center">
         <div class="images w-24 h-24 mx-auto overflow-hidden rounded-full">
           <img
-            src="https://i0.wp.com/thatnhucuocsong.com.vn/wp-content/uploads/2022/02/avatar-bua-cho-FB.jpg?ssl\u003d1"
+            class="w-full h-full object-cover"
+            :src="require('@/assets/images/avatar.jpg')"
             alt="User Profile"
           />
         </div>
