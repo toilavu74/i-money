@@ -9,4 +9,10 @@ function formatDate(date) {
     second: "numeric",
   }).format(date);
 }
-export { formatDate };
+function formatCurrency(value) {
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(value);
+}
+export { formatDate, formatCurrency };

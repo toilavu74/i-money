@@ -3,45 +3,49 @@
     <ul class="flex flex-col gap-3" v-if="transactions.length">
       <li class="bg-white px-4 py-3 rounded-lg">
         <span class="font-bold text-lg text-rose-500"
-          >Total: {{ totalSum }} VND</span
+          >Total: {{ formatCurrency(totalSum) }}</span
         >
       </li>
       <li v-for="transaction in transactions" :key="transaction.id">
-        <div
-          class="flex items-center justify-between bg-white px-4 py-3 rounded-lg"
+        <router-link
+          :to="{ name: 'EditTransactions', params: { id: transaction.id } }"
         >
-          <div class="item-left">
-            <div class="item-content flex items-center gap-3">
-              <div
-                class="img w-10 h-10 rounded-md overflow-hidden"
-                v-if="transaction.thumbnail"
-              >
-                <img
-                  class="w-full h-full object-cover"
-                  :src="transaction.thumbnail"
-                  alt="Images transaction"
-                />
-              </div>
-              <span v-else class="block w-10 h-10 rounded-md"></span>
-              <div class="text">
-                <h3 class="font-bold text-black text-sm">
-                  {{ transaction.category }}
-                </h3>
-                <p class="text-gray-400 text-sm">
-                  {{ transaction.note }}
-                </p>
+          <div
+            class="flex items-center justify-between bg-white px-4 py-3 rounded-lg"
+          >
+            <div class="item-left">
+              <div class="item-content flex items-center gap-3">
+                <div
+                  class="img w-10 h-10 rounded-md overflow-hidden"
+                  v-if="transaction.thumbnail"
+                >
+                  <img
+                    class="w-full h-full object-cover"
+                    :src="transaction.thumbnail"
+                    alt="Images transaction"
+                  />
+                </div>
+                <span v-else class="block w-10 h-10 rounded-md"></span>
+                <div class="text">
+                  <h3 class="font-bold text-black text-sm">
+                    {{ transaction.category }}
+                  </h3>
+                  <p class="text-gray-400 text-sm">
+                    {{ transaction.note }}
+                  </p>
+                </div>
               </div>
             </div>
+            <div class="item-right">
+              <h3 class="font-bold text-red text-lg">
+                {{ formatCurrency(transaction.total) }}
+              </h3>
+              <p class="text-gray-400 text-sm">
+                {{ formatDate(transaction.time.toDate()) }}
+              </p>
+            </div>
           </div>
-          <div class="item-right">
-            <h3 class="font-bold text-red text-lg">
-              {{ transaction.total }} VND
-            </h3>
-            <p class="text-gray-400 text-sm">
-              {{ formatDate(transaction.time.toDate()) }}
-            </p>
-          </div>
-        </div>
+        </router-link>
       </li>
     </ul>
   </div>
@@ -60,7 +64,7 @@ ul li:nth-child(3n) .item-left .item-content span {
 <script>
 import { ref, onMounted } from "vue";
 import useTransactions from "@/composables/useTransaction";
-import { formatDate } from "@/constants/import";
+import { formatDate, formatCurrency } from "@/constants/import";
 export default {
   setup() {
     const transactions = ref([]);
@@ -84,7 +88,7 @@ export default {
     onMounted(() => {
       fectTransactions();
     });
-    return { transactions, formatDate, totalSum };
+    return { transactions, formatDate, totalSum, formatCurrency };
   },
 };
 </script>

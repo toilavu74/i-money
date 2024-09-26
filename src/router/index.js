@@ -70,6 +70,19 @@ const routes = [
     beforeEnter: requireAuth,
   },
   {
+    path: "/edit-transactions/:id",
+    name: "EditTransactions",
+    meta: {
+      heading: "Edit transactions",
+      isShowFooter: true,
+    },
+    component: () =>
+      import(
+        /* webpackChunkName: "edit-transactions" */ "../views/edit-transactions.vue"
+      ),
+    beforeEnter: requireAuth,
+  },
+  {
     path: "/category",
     name: "Category",
     meta: {
@@ -80,7 +93,7 @@ const routes = [
     beforeEnter: requireAuth,
   },
   {
-    path: "/category/:id",
+    path: "/edit-category/:id",
     name: "EditCategory",
     meta: {
       heading: "Eidt category",

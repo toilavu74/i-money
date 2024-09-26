@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="onSubmit">
+  <form @submit.prevent="onUpdate">
     <!-- Start: Total -->
     <div class="row py-4 bg-white">
       <div class="container mx-auto px-8">
@@ -39,7 +39,9 @@
                 v-if="cats.length"
                 v-model="category"
               >
-                <option selected disabled value="">Please select one</option>
+                <option v-for="cat in cats" :key="cat.id" :value="cat.nameCat">
+                  {{ cat.nameCat }}
+                </option>
               </select>
               <span class="block mt-2 text-red" v-if="categoryError">{{
                 categoryError
@@ -58,17 +60,9 @@
                 class="w-full outline-none text-sm text-black"
                 v-model="note"
               />
-              <span class="block mt-2 text-red" v-if="notelError">{{
-                notelError
+              <span class="block mt-2 text-red" v-if="noteError">{{
+                noteError
               }}</span>
-            </div>
-          </div>
-          <div class="group flex items-center gap-4">
-            <div class="item-left w-1/6 text-right">
-              <i class="t2ico-calendar text-xl"></i>
-            </div>
-            <div class="item-right w-5/6 border-b border-gray-100 py-3">
-              <div class="text-dark">{{ time }}</div>
             </div>
           </div>
           <div class="group flex items-center gap-4">
@@ -82,17 +76,9 @@
         </div>
       </div>
     </div>
-    <!-- Start: More Details -->
-    <div class="row mt-6 bg-white text-center" v-if="!isMoreDetail">
-      <button
-        @click="isMoreDetail = true"
-        class="text-primary text-center py-3"
-      >
-        More Details
-      </button>
-    </div>
+
     <!-- Start: Avanced -->
-    <div class="avanced" v-if="isMoreDetail">
+    <div class="avanced">
       <div class="row mt-6 bg-white">
         <div class="container mx-auto px-8">
           <div class="group flex items-center gap-4">
@@ -143,10 +129,8 @@
                   type="file"
                   id="file"
                   class="outline-none text-sm text-black w-0 h-0 overflow-hidden absolute"
-                  @change="onChangeFile"
                 />
-                <div class="text-gray-700" v-if="file">{{ file.name }}</div>
-                <div class="text-primary" v-else>Upload photos</div>
+                <div class="text-primary">Upload photos</div>
               </label>
             </div>
           </div>
@@ -154,8 +138,8 @@
       </div>
     </div>
     <!-- Start: Error -->
-    <div class="container mx-auto px-8 mt-2" v-if="errorFile">
-      <span class="text-red">{{ errorFile }}</span>
+    <div class="container mx-auto px-8 mt-2">
+      <span class="text-red"></span>
     </div>
     <!-- Start: Button submit -->
     <div class="row mt-6">
@@ -165,126 +149,107 @@
           type="submit"
           class="py-2 w-full text-center bg-primary text-white text-lg rounded-md"
         >
-          Add
+          Update
         </button>
         <button
           v-else
           type="submit"
           class="py-2 w-full text-center bg-gray-500 text-white text-lg rounded-md"
         >
-          Adding...
+          Updating...
         </button>
       </div>
     </div>
   </form>
 </template>
 <script>
-import { ref, onMounted } from "vue";
-import { useUser } from "@/composables/useUser";
-import useCollection from "@/composables/useCollection";
-import useStorage from "@/composables/useStorage";
+import { ref, onMounted, computed } from "vue";
+import { useRoute } from "vue-router";
+import useTransactions from "@/composables/useTransaction";
 import { useField, useForm } from "vee-validate";
-import * as yub from "yup";
+import * as yup from "yup";
 import useCategory from "@/composables/useCategory";
 export default {
   setup() {
-    const isMoreDetail = ref(false);
-    //const total = ref(0);
-    // const category = ref("");
-    //const note = ref("");
-    const time = ref(new Date());
-    //const person = ref("");
-    //const location = ref("");
-    const { getUser } = useUser();
-    const { user } = getUser();
-    const { url, uploadFile } = useStorage("transactions");
-    const { error, isPending, addRecord } = useCollection("transactions");
-    const file = ref(null);
-    const errorFile = ref(null);
-
-    const schema = yub.object({
-      total: yub.number().required("Total cannot be left blank"),
-      category: yub.string().required("Category cannot be left blank"),
-      note: yub.string().required("Note cannot be left blank"),
-      person: yub.string().required("Person cannot be left blank"),
-      location: yub.string().required("Location cannot be left blank"),
+    const transactions = ref([]);
+    const { editTransaction, updateTransactions, isPending } =
+      useTransactions();
+    const route = useRoute();
+    const transactionId = computed(() => route.params.id);
+    //console.log(transactionId);
+    const { getCollectionCategory } = useCategory();
+    const cats = ref([]);
+    const schema = yup.object({
+      total: yup.number().required(),
+      category: yup.string().required(),
+      note: yup.string().required(),
+      location: yup.string().required(),
+      person: yup.string().required(),
     });
 
     const { handleSubmit } = useForm({
       validationSchema: schema,
     });
+
     const { value: total, errorMessage: totalError } = useField("total");
     const { value: category, errorMessage: categoryError } =
       useField("category");
-    const { value: note, errorMessage: notelError } = useField("note");
-    const { value: person, errorMessage: personError } = useField("person");
+    const { value: note, errorMessage: noteError } = useField("note");
     const { value: location, errorMessage: locationError } =
       useField("location");
-    function onChangeFile(event) {
-      const selected = event.target.files[0];
-      const typeFile = ["image/png", "image/jpg", "image/heic", "image/jpeg"];
-      //console.log(selected);
-      if (selected && typeFile.includes(selected.type)) {
-        file.value = selected;
-        //console.log(file.value);
-      } else {
-        console.log("error");
-        file.value = null;
-        errorFile.value =
-          "Invalid file format. (Please select a file with the extension .png, .jpg, jpeg, heic)";
-      }
-    }
+    const { value: person, errorMessage: personError } = useField("person");
 
-    const { getCollectionCategory } = useCategory();
-    const cats = ref([]);
     async function fectCategory() {
       try {
         cats.value = await getCollectionCategory();
         // console.log(cats.value);
       } catch (err) {
         console.log(err);
-        error.value = err.message;
+        // error.value = err.message;
+      }
+    }
+
+    async function fetchTransactions(id) {
+      const data = await editTransaction(id);
+      if (data) {
+        transactions.value = data;
+        console.log(transactions.value);
+        total.value = data.total;
+        category.value = data.category;
+        note.value = data.note;
+        location.value = data.location;
+        person.value = data.person;
       }
     }
     onMounted(() => {
+      fetchTransactions(transactionId.value);
       fectCategory();
     });
-    const onSubmit = handleSubmit(async () => {
-      if (file.value) await uploadFile(file.value);
-      const transactions = {
+
+    const onUpdate = handleSubmit(async () => {
+      const updatedData = {
+        ...transactions.value,
         total: total.value,
         category: category.value,
         note: note.value,
-        time: time.value,
         location: location.value,
         person: person.value,
-        userID: user.value.uid,
-        thumbnail: url.value,
       };
-
-      await addRecord(transactions);
+      await updateTransactions(transactionId.value, updatedData);
     });
     return {
-      file,
+      onUpdate,
       total,
       category,
       note,
-      time,
       location,
       person,
       totalError,
       categoryError,
-      notelError,
-      personError,
+      noteError,
       locationError,
-      isMoreDetail,
-      onSubmit,
-      error,
+      personError,
       isPending,
-      addRecord,
-      onChangeFile,
-      errorFile,
-      fectCategory,
       cats,
     };
   },
