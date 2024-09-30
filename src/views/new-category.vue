@@ -42,6 +42,7 @@
 import useCollection from "@/composables/useCollection";
 import { useForm, useField } from "vee-validate";
 import { useUser } from "@/composables/useUser";
+import { useRouter } from "vue-router";
 import * as yub from "yup";
 export default {
   setup() {
@@ -57,6 +58,7 @@ export default {
       validationSchema: schema,
     });
     const { value: nameCat, errorMessage: nameError } = useField("nameCat");
+    const router = useRouter();
     const onSubmit = handleSubmit(async () => {
       const { getUser } = useUser();
       const { user } = getUser();
@@ -68,6 +70,7 @@ export default {
         updatedAt: createdAt,
       };
       await addRecord(cats);
+      router.push({ name: "Category", params: {} });
     });
     return { error, isPending, nameCat, onSubmit, nameError, addRecord };
   },

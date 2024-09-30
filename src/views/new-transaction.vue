@@ -33,13 +33,16 @@
             </div>
             <div class="item-right w-5/6 border-b border-gray-100 py-3">
               <select
+                v-model="category"
                 name="category"
                 class="w-full outline-none text-black"
                 id="category"
                 v-if="cats.length"
-                v-model="category"
               >
-                <option selected disabled value="">Please select one</option>
+                <option disabled value="default">Please select one</option>
+                <option v-for="cat in cats" :key="cat.id" :value="cat.nameCat">
+                  {{ cat.nameCat }}
+                </option>
               </select>
               <span class="block mt-2 text-red" v-if="categoryError">{{
                 categoryError
@@ -184,8 +187,9 @@ import { useUser } from "@/composables/useUser";
 import useCollection from "@/composables/useCollection";
 import useStorage from "@/composables/useStorage";
 import { useField, useForm } from "vee-validate";
-import * as yub from "yup";
+import * as yup from "yup";
 import useCategory from "@/composables/useCategory";
+import { useRouter } from "vue-router";
 export default {
   setup() {
     const isMoreDetail = ref(false);
@@ -202,12 +206,12 @@ export default {
     const file = ref(null);
     const errorFile = ref(null);
 
-    const schema = yub.object({
-      total: yub.number().required("Total cannot be left blank"),
-      category: yub.string().required("Category cannot be left blank"),
-      note: yub.string().required("Note cannot be left blank"),
-      person: yub.string().required("Person cannot be left blank"),
-      location: yub.string().required("Location cannot be left blank"),
+    const schema = yup.object({
+      total: yup.number().required("Total cannot be left blank"),
+      category: yup.string().required("Category cannot be left blank"),
+      note: yup.string().required("Note cannot be left blank"),
+      person: yup.string().required("Person cannot be left blank"),
+      location: yup.string().required("Location cannot be left blank"),
     });
 
     const { handleSubmit } = useForm({
@@ -249,6 +253,7 @@ export default {
     onMounted(() => {
       fectCategory();
     });
+    const router = useRouter();
     const onSubmit = handleSubmit(async () => {
       if (file.value) await uploadFile(file.value);
       const transactions = {
@@ -261,8 +266,9 @@ export default {
         userID: user.value.uid,
         thumbnail: url.value,
       };
-
+      //console.log(transactions);
       await addRecord(transactions);
+      router.push({ name: "Transactions", params: {} });
     });
     return {
       file,

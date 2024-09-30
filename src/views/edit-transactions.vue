@@ -124,13 +124,15 @@
               <i class="t2ico-camera text-xl text-primary"></i>
             </div>
             <div class="item-right w-5/6 py-3">
-              <label for="file">
+              <label for="file" class="flex items-center">
                 <input
                   type="file"
                   id="file"
                   class="outline-none text-sm text-black w-0 h-0 overflow-hidden absolute"
+                  @change="onChangeFile"
                 />
-                <div class="text-primary">Upload photos</div>
+                <div class="text-gray-700" v-if="file">{{ file.name }}</div>
+                <div class="text-primary" v-else>Change photos</div>
               </label>
             </div>
           </div>
@@ -138,8 +140,8 @@
       </div>
     </div>
     <!-- Start: Error -->
-    <div class="container mx-auto px-8 mt-2">
-      <span class="text-red"></span>
+    <div class="container mx-auto px-8 mt-2" v-if="errorFile">
+      <span class="text-red">{{ errorFile }}</span>
     </div>
     <!-- Start: Button submit -->
     <div class="row mt-6">
@@ -166,6 +168,7 @@
 import { ref, onMounted, computed } from "vue";
 import { useRoute } from "vue-router";
 import useTransactions from "@/composables/useTransaction";
+import useStorage from "@/composables/useStorage";
 import { useField, useForm } from "vee-validate";
 import * as yup from "yup";
 import useCategory from "@/composables/useCategory";
@@ -176,6 +179,10 @@ export default {
       useTransactions();
     const route = useRoute();
     const transactionId = computed(() => route.params.id);
+    const { url, uploadFile } = useStorage("transactions");
+    const file = ref(null);
+    const errorFile = ref(null);
+    const thumbnail = ref(null);
     //console.log(transactionId);
     const { getCollectionCategory } = useCategory();
     const cats = ref([]);
@@ -213,29 +220,56 @@ export default {
       const data = await editTransaction(id);
       if (data) {
         transactions.value = data;
-        console.log(transactions.value);
         total.value = data.total;
         category.value = data.category;
         note.value = data.note;
         location.value = data.location;
         person.value = data.person;
+        thumbnail.value = data.thumbnail;
       }
     }
     onMounted(() => {
       fetchTransactions(transactionId.value);
       fectCategory();
     });
-
+    function onChangeFile(event) {
+      const selected = event.target.files[0];
+      const typeFile = ["image/png", "image/jpg", "image/heic", "image/jpeg"];
+      //console.log(selected);
+      if (selected && typeFile.includes(selected.type)) {
+        file.value = selected;
+        //console.log(file.value);
+      } else {
+        console.log("error");
+        file.value = null;
+        errorFile.value =
+          "Invalid file format. (Please select a file with the extension .png, .jpg, jpeg, heic)";
+      }
+    }
     const onUpdate = handleSubmit(async () => {
-      const updatedData = {
-        ...transactions.value,
-        total: total.value,
-        category: category.value,
-        note: note.value,
-        location: location.value,
-        person: person.value,
-      };
-      await updateTransactions(transactionId.value, updatedData);
+      if (file.value) {
+        await uploadFile(file.value);
+        const updatedData = {
+          ...transactions.value,
+          total: total.value,
+          category: category.value,
+          note: note.value,
+          location: location.value,
+          person: person.value,
+          thumbnail: url.value,
+        };
+        await updateTransactions(transactionId.value, updatedData);
+      } else {
+        const updatedData = {
+          ...transactions.value,
+          total: total.value,
+          category: category.value,
+          note: note.value,
+          location: location.value,
+          person: person.value,
+        };
+        await updateTransactions(transactionId.value, updatedData);
+      }
     });
     return {
       onUpdate,
@@ -251,6 +285,10 @@ export default {
       personError,
       isPending,
       cats,
+      onChangeFile,
+      errorFile,
+      thumbnail,
+      file,
     };
   },
 };

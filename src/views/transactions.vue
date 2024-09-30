@@ -6,7 +6,7 @@
           >Total: {{ formatCurrency(totalSum) }}</span
         >
       </li>
-      <li v-for="transaction in transactions" :key="transaction.id">
+      <li v-for="transaction in paginatedData" :key="transaction.id">
         <router-link
           :to="{ name: 'EditTransactions', params: { id: transaction.id } }"
         >
@@ -48,6 +48,33 @@
         </router-link>
       </li>
     </ul>
+    <div
+      class="pagination-controls mt-5 flex justify-center items-center gap-1"
+    >
+      <button
+        @click="goToPreviousPage"
+        :disabled="currentPage === 1"
+        class="rotate-180"
+        :class="{ 'cursor-not-allowed': currentPage === 1 }"
+      >
+        <i class="t2ico-arrow-right"></i>
+      </button>
+      <button
+        v-for="page in totalPages"
+        :key="page"
+        @click="goToPage(page)"
+        :class="{ active: page === currentPage }"
+      >
+        {{ page }}
+      </button>
+      <button
+        @click="goToNextPage"
+        :disabled="currentPage === totalPages"
+        :class="{ 'cursor-not-allowed': currentPage === totalPages }"
+      >
+        <i class="t2ico-arrow-right"></i>
+      </button>
+    </div>
   </div>
 </template>
 <style>
@@ -60,9 +87,23 @@ ul li:nth-child(even) .item-left .item-content span {
 ul li:nth-child(3n) .item-left .item-content span {
   @apply bg-orange-300;
 }
+.pagination-controls button {
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  border: 1px solid #0012ff;
+  font-size: 14px;
+  background: #fff;
+  color: #0012ff;
+}
+.pagination-controls button.active {
+  @apply bg-primary;
+  color: #fff;
+}
 </style>
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import useTransactions from "@/composables/useTransaction";
 import { formatDate, formatCurrency } from "@/constants/import";
 export default {
@@ -71,24 +112,68 @@ export default {
     const error = ref(null);
     const { getTransactions } = useTransactions();
     const totalSum = ref();
-    async function fectTransactions() {
+    async function fecthTransactions() {
       try {
         transactions.value = await getTransactions();
         //console.log(transactions.value);
-        // Tính tổng 'total' của tất cả các giao dịch
         totalSum.value = transactions.value.reduce((sum, transaction) => {
-          return sum + (transaction.total || 0); // Đảm bảo cộng giá trị, tránh undefined
-        }, 0); // Giá trị khởi tạo của sum là 0
+          return sum + (transaction.total || 0);
+        }, 0);
+        return transactions.value;
       } catch (err) {
         console.log(err);
         error.value = err.message;
       }
     }
-
+    //console.log(transactions);
     onMounted(() => {
-      fectTransactions();
+      fecthTransactions();
     });
-    return { transactions, formatDate, totalSum, formatCurrency };
+
+    const itemsPerPage = ref(6);
+    const currentPage = ref(1);
+
+    const totalPages = computed(() => {
+      return Math.ceil(transactions.value.length / itemsPerPage.value);
+    });
+
+    const paginatedData = computed(() => {
+      const start = (currentPage.value - 1) * itemsPerPage.value;
+      const end = start + itemsPerPage.value;
+      return transactions.value.slice(start, end);
+    });
+
+    const goToPreviousPage = () => {
+      if (currentPage.value > 1) {
+        currentPage.value--;
+      }
+    };
+
+    const goToNextPage = () => {
+      if (currentPage.value < totalPages.value) {
+        currentPage.value++;
+      }
+    };
+
+    const goToPage = (page) => {
+      if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page;
+      }
+    };
+
+    return {
+      transactions,
+      formatDate,
+      totalSum,
+      formatCurrency,
+      itemsPerPage,
+      currentPage,
+      totalPages,
+      goToNextPage,
+      goToPreviousPage,
+      goToPage,
+      paginatedData,
+    };
   },
 };
 </script>
