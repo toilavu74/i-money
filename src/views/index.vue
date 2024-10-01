@@ -12,7 +12,7 @@
       </li>
     </ul>
     <ul class="flex flex-col gap-3 mt-6" v-if="filteredTransactions.length">
-      <li v-for="transaction in filteredTransactions" :key="transaction.id">
+      <li v-for="transaction in paginatedData" :key="transaction.id">
         <router-link
           :to="{ name: 'EditTransactions', params: { id: transaction.id } }"
         >
@@ -34,15 +34,15 @@
                 <span v-else class="block w-10 h-10 rounded-md"></span>
                 <div class="text">
                   <h3 class="font-bold text-black text-sm">
-                    {{ transaction.category }}
+                    {{ transaction.note }}
                   </h3>
                   <p class="text-gray-400 text-sm">
-                    {{ transaction.note }}
+                    {{ transaction.category }}
                   </p>
                 </div>
               </div>
             </div>
-            <div class="item-right">
+            <div class="item-right text-right">
               <h3 class="font-bold text-red text-lg">
                 {{ formatCurrency(transaction.total) }}
               </h3>
@@ -54,6 +54,33 @@
         </router-link>
       </li>
     </ul>
+    <div
+      class="pagination-controls mt-5 flex justify-center items-center gap-1"
+    >
+      <button
+        @click="goToPreviousPage"
+        :disabled="currentPage === 1"
+        class="rotate-180"
+        :class="{ 'cursor-not-allowed': currentPage === 1 }"
+      >
+        <i class="t2ico-arrow-right"></i>
+      </button>
+      <button
+        v-for="page in totalPages"
+        :key="page"
+        @click="goToPage(page)"
+        :class="{ active: page === currentPage }"
+      >
+        {{ page }}
+      </button>
+      <button
+        @click="goToNextPage"
+        :disabled="currentPage === totalPages"
+        :class="{ 'cursor-not-allowed': currentPage === totalPages }"
+      >
+        <i class="t2ico-arrow-right"></i>
+      </button>
+    </div>
   </div>
 </template>
 <style>
@@ -65,6 +92,20 @@ ul li:nth-child(even) .item-left .item-content span {
 }
 ul li:nth-child(3n) .item-left .item-content span {
   @apply bg-orange-300;
+}
+.pagination-controls button {
+  width: 30px;
+  height: 30px;
+  line-height: 30px;
+  text-align: center;
+  border: 1px solid #0012ff;
+  font-size: 14px;
+  background: #fff;
+  color: #0012ff;
+}
+.pagination-controls button.active {
+  @apply bg-primary;
+  color: #fff;
 }
 </style>
 <script>
@@ -113,13 +154,12 @@ export default {
     const filterType = ref("all");
     function getStartOfWeek(date) {
       const day = date.getDay();
-      const diff = date.getDate() - day + (day === 0 ? -6 : 1); // Lấy Thứ Hai là ngày đầu tuần
+      const diff = date.getDate() - day + (day === 0 ? -6 : 1);
       return new Date(date.setDate(diff));
     }
     const filteredTransactions = computed(() => {
       const now = new Date();
       return transactions.value.filter((transaction) => {
-        // Kiểm tra nếu transaction.time là một Firebase Timestamp, thì chuyển thành đối tượng Date
         const transactionDate =
           transaction.time instanceof Date
             ? transaction.time
@@ -140,12 +180,49 @@ export default {
             return transactionDate.getFullYear() === now.getFullYear();
           }
           default:
-            return true; // Hiển thị tất cả các giao dịch (All)
+            return true;
         }
       });
     });
 
+    const itemsPerPage = ref(6);
+    const currentPage = ref(1);
+
+    const totalPages = computed(() => {
+      return Math.ceil(filteredTransactions.value.length / itemsPerPage.value);
+    });
+
+    const paginatedData = computed(() => {
+      const start = (currentPage.value - 1) * itemsPerPage.value;
+      const end = start + itemsPerPage.value;
+      return filteredTransactions.value.slice(start, end);
+    });
+
+    const goToPreviousPage = () => {
+      if (currentPage.value > 1) {
+        currentPage.value--;
+      }
+    };
+
+    const goToNextPage = () => {
+      if (currentPage.value < totalPages.value) {
+        currentPage.value++;
+      }
+    };
+
+    const goToPage = (page) => {
+      if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page;
+      }
+    };
+
     return {
+      paginatedData,
+      goToNextPage,
+      goToPage,
+      goToPreviousPage,
+      currentPage,
+      totalPages,
       filterOptions,
       transactions,
       formatCurrency,

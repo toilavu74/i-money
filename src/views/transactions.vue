@@ -1,6 +1,14 @@
 <template>
   <div class="container mx-auto px-8">
-    <ul class="flex flex-col gap-3" v-if="transactions.length">
+    <ul class="flex flex-col gap-3" v-if="paginatedData.length">
+      <li class="bg-white rounded-lg">
+        <input
+          type="text"
+          v-model="searchQuery"
+          placeholder="Search..."
+          class="w-full h-[45px] px-5 rounded-lg outline-none"
+        />
+      </li>
       <li class="bg-white px-4 py-3 rounded-lg">
         <span class="font-bold text-lg text-rose-500"
           >Total: {{ formatCurrency(totalSum) }}</span
@@ -28,15 +36,15 @@
                 <span v-else class="block w-10 h-10 rounded-md"></span>
                 <div class="text">
                   <h3 class="font-bold text-black text-sm">
-                    {{ transaction.category }}
+                    {{ transaction.note }}
                   </h3>
                   <p class="text-gray-400 text-sm">
-                    {{ transaction.note }}
+                    {{ transaction.category }}
                   </p>
                 </div>
               </div>
             </div>
-            <div class="item-right">
+            <div class="item-right text-right">
               <h3 class="font-bold text-red text-lg">
                 {{ formatCurrency(transaction.total) }}
               </h3>
@@ -129,18 +137,28 @@ export default {
     onMounted(() => {
       fecthTransactions();
     });
-
+    const searchQuery = ref("");
+    const filteredTransactions = computed(() => {
+      const query = searchQuery.value.toLocaleLowerCase();
+      return transactions.value.filter((transaction) => {
+        return (
+          transaction.category.toLowerCase().includes(query) ||
+          transaction.note.toLowerCase().includes(query) ||
+          transaction.total.toString().includes(query)
+        );
+      });
+    });
     const itemsPerPage = ref(6);
     const currentPage = ref(1);
 
     const totalPages = computed(() => {
-      return Math.ceil(transactions.value.length / itemsPerPage.value);
+      return Math.ceil(filteredTransactions.value.length / itemsPerPage.value);
     });
 
     const paginatedData = computed(() => {
       const start = (currentPage.value - 1) * itemsPerPage.value;
       const end = start + itemsPerPage.value;
-      return transactions.value.slice(start, end);
+      return filteredTransactions.value.slice(start, end);
     });
 
     const goToPreviousPage = () => {
@@ -173,6 +191,7 @@ export default {
       goToPreviousPage,
       goToPage,
       paginatedData,
+      searchQuery,
     };
   },
 };

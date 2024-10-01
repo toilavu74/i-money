@@ -35,6 +35,9 @@
 .footer .mr .items:nth-child(3) {
   margin-right: -40px;
 }
+.router-link-active i {
+  @apply text-primary;
+}
 </style>
 <script>
 import { useRouter, useRoute } from "vue-router";
@@ -66,6 +69,7 @@ export default {
     const router = useRouter();
 
     const route = useRoute();
+    //console.log(route);
     const meta = computed(() => route.meta);
     function onNewTransaction() {
       router.push({ name: "NewTransaction", params: {} });

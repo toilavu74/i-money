@@ -6,7 +6,7 @@
         <div class="images w-24 h-24 mx-auto overflow-hidden rounded-full">
           <img
             class="w-full h-full object-cover"
-            :src="require('@/assets/images/avatar.jpg')"
+            src="https://static.vecteezy.com/system/resources/previews/025/561/585/original/little-child-anime-cartoon-character-free-vector.jpg"
             alt="User Profile"
           />
         </div>
@@ -53,7 +53,7 @@ export default {
   setup() {
     const profileOptions = reactive([
       {
-        name: "My wallet",
+        name: "Transactions",
         icon: "t2ico-wallet",
         router: {
           name: "Transactions",

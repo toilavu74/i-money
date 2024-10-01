@@ -166,7 +166,7 @@
 </template>
 <script>
 import { ref, onMounted, computed } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import useTransactions from "@/composables/useTransaction";
 import useStorage from "@/composables/useStorage";
 import { useField, useForm } from "vee-validate";
@@ -246,6 +246,9 @@ export default {
           "Invalid file format. (Please select a file with the extension .png, .jpg, jpeg, heic)";
       }
     }
+
+    const router = useRouter();
+
     const onUpdate = handleSubmit(async () => {
       if (file.value) {
         await uploadFile(file.value);
@@ -259,6 +262,7 @@ export default {
           thumbnail: url.value,
         };
         await updateTransactions(transactionId.value, updatedData);
+        router.push({ name: "Transactions", params: {} });
       } else {
         const updatedData = {
           ...transactions.value,
@@ -269,6 +273,7 @@ export default {
           person: person.value,
         };
         await updateTransactions(transactionId.value, updatedData);
+        router.push({ name: "Transactions", params: {} });
       }
     });
     return {

@@ -1,9 +1,25 @@
 <template>
+  <div class="container mx-auto px-8 mb-4">
+    <div class="flex items-center justify-between gap-4">
+      <router-link
+        class="text-center bg-primary text-white py-2 w-1/2 rounded-md"
+        :to="{ name: 'Profile', params: {} }"
+      >
+        <span>Profile</span>
+      </router-link>
+      <router-link
+        class="text-center bg-primary text-white py-2 w-1/2 rounded-md"
+        :to="{ name: 'NewCategory', params: {} }"
+      >
+        <span>Add new category</span>
+      </router-link>
+    </div>
+  </div>
   <div class="container mx-auto px-8">
-    <ul class="flex flex-col gap-4" v-if="cats.length">
+    <ul class="flex flex-col gap-4" v-if="paginatedData.length">
       <li
         class="bg-white py-3 px-5 rounded-lg"
-        v-for="(cat, index) in cats"
+        v-for="(cat, index) in paginatedData"
         :key="cat.userID"
       >
         <div class="item flex justify-between">
@@ -30,25 +46,34 @@
       </li>
     </ul>
   </div>
-  <div class="container mx-auto px-8 mt-4">
-    <div class="flex items-center justify-between gap-4">
-      <router-link
-        class="text-center bg-primary text-white py-2 w-1/2 rounded-md"
-        :to="{ name: 'Profile', params: {} }"
-      >
-        <span class="text-lg">Profile</span>
-      </router-link>
-      <router-link
-        class="text-center bg-primary text-white py-2 w-1/2 rounded-md"
-        :to="{ name: 'NewCategory', params: {} }"
-      >
-        <span>Add new category</span>
-      </router-link>
-    </div>
+  <div class="pagination-controls mt-5 flex justify-center items-center gap-1">
+    <button
+      @click="goToPreviousPage"
+      :disabled="currentPage === 1"
+      class="rotate-180"
+      :class="{ 'cursor-not-allowed': currentPage === 1 }"
+    >
+      <i class="t2ico-arrow-right"></i>
+    </button>
+    <button
+      v-for="page in totalPages"
+      :key="page"
+      @click="goToPage(page)"
+      :class="{ active: page === currentPage }"
+    >
+      {{ page }}
+    </button>
+    <button
+      @click="goToNextPage"
+      :disabled="currentPage === totalPages"
+      :class="{ 'cursor-not-allowed': currentPage === totalPages }"
+    >
+      <i class="t2ico-arrow-right"></i>
+    </button>
   </div>
 </template>
 <script>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, computed } from "vue";
 import useCategory from "@/composables/useCategory.js";
 export default {
   setup() {
@@ -76,7 +101,48 @@ export default {
         error.value = err.message;
       }
     }
-    return { cats, handleDelete };
+
+    const itemsPerPage = ref(6);
+    const currentPage = ref(1);
+
+    const totalPages = computed(() => {
+      return Math.ceil(cats.value.length / itemsPerPage.value);
+    });
+
+    const paginatedData = computed(() => {
+      const start = (currentPage.value - 1) * itemsPerPage.value;
+      const end = start + itemsPerPage.value;
+      return cats.value.slice(start, end);
+    });
+
+    const goToPreviousPage = () => {
+      if (currentPage.value > 1) {
+        currentPage.value--;
+      }
+    };
+
+    const goToNextPage = () => {
+      if (currentPage.value < totalPages.value) {
+        currentPage.value++;
+      }
+    };
+
+    const goToPage = (page) => {
+      if (page >= 1 && page <= totalPages.value) {
+        currentPage.value = page;
+      }
+    };
+
+    return {
+      cats,
+      handleDelete,
+      paginatedData,
+      goToPreviousPage,
+      goToNextPage,
+      goToPage,
+      totalPages,
+      currentPage,
+    };
   },
 };
 </script>
