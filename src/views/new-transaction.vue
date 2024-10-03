@@ -1,5 +1,5 @@
 <template>
-  <form @submit.prevent="onSubmit">
+  <form @submit.prevent="onSubmit" class="mb-[100px]">
     <!-- Start: Total -->
     <div class="row py-4 bg-white">
       <div class="container mx-auto px-8">
