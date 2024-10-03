@@ -1,19 +1,21 @@
 <template>
   <div class="container mx-auto px-8">
-    <ul class="flex flex-col gap-3" v-if="paginatedData.length">
-      <li class="bg-white rounded-lg">
+    <div class="mb-[12px] flex flex-col gap-3">
+      <div class="bg-white rounded-lg">
         <input
           type="text"
           v-model="searchQuery"
           placeholder="Search..."
           class="w-full h-[45px] px-5 rounded-lg outline-none"
         />
-      </li>
-      <li class="bg-white px-4 py-3 rounded-lg">
+      </div>
+      <div class="bg-white px-4 py-3 rounded-lg">
         <span class="font-bold text-lg text-rose-500"
           >Total: {{ formatCurrency(totalSum) }}</span
         >
-      </li>
+      </div>
+    </div>
+    <ul class="flex flex-col gap-3" v-if="paginatedData.length">
       <li v-for="transaction in paginatedData" :key="transaction.id">
         <router-link
           :to="{ name: 'EditTransactions', params: { id: transaction.id } }"
@@ -56,7 +58,11 @@
         </router-link>
       </li>
     </ul>
+    <div class="bg-white px-4 py-3 rounded-lg" v-else>
+      <span class="text-lg text-black">No found</span>
+    </div>
     <div
+      v-if="paginatedData.length"
       class="pagination-controls mt-5 flex justify-center items-center gap-1"
     >
       <button

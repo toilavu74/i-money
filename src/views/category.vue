@@ -102,7 +102,7 @@ export default {
       }
     }
 
-    const itemsPerPage = ref(6);
+    const itemsPerPage = ref(8);
     const currentPage = ref(1);
 
     const totalPages = computed(() => {

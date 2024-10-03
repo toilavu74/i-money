@@ -11,7 +11,7 @@
         </button>
       </li>
     </ul>
-    <ul class="flex flex-col gap-3 mt-6" v-if="filteredTransactions.length">
+    <ul class="flex flex-col gap-3 mt-6" v-if="paginatedData.length">
       <li v-for="transaction in paginatedData" :key="transaction.id">
         <router-link
           :to="{ name: 'EditTransactions', params: { id: transaction.id } }"
@@ -116,10 +116,6 @@ export default {
   setup() {
     const filterOptions = ref([
       {
-        text: "All",
-        value: "all",
-      },
-      {
         text: "Week",
         value: "week",
       },
@@ -130,6 +126,10 @@ export default {
       {
         text: "Year",
         value: "year",
+      },
+      {
+        text: "All",
+        value: "all",
       },
     ]);
 
